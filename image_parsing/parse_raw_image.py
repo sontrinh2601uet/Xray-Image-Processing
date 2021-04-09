@@ -4,10 +4,11 @@
 # Class: parse_raw_image.py
 import os
 
-import cv2
+import PIL
+import PIL.ImageOps
 import matplotlib.pyplot as plt
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageEnhance
 
 
 class RawImageParser(object):
@@ -21,7 +22,7 @@ class RawImageParser(object):
 
     def parse_raw_to_image(self):
         if not os.path.exists(os.path.dirname(self.result_folder)):
-            os.mkdir(os.path.dirname(os.path.dirname(self.result_folder)))
+            os.mkdir(os.path.join(os.path.dirname(self.result_folder)))
 
         image = np.fromfile(self.path_file, dtype='int16', sep="")
         image = image.reshape([self.height, self.width])
@@ -30,19 +31,26 @@ class RawImageParser(object):
 
     def start_image_processing(self):
         image = Image.open(self.result_folder)
+        raw_image = image.rotate(self.rotate)
+        raw_image.save(self.result_folder)
 
-        image = image.rotate(self.rotate)
-        image = self._shift_hue(image, 10)
+        image = PIL.Image.open(self.result_folder)
+        gray_image = PIL.ImageOps.grayscale(image)
+        gray_image = PIL.ImageOps.equalize(gray_image)
+        gray_image.save(self.result_folder)
 
-        image.save(self.result_folder)
+        # img = Image.open(self.result_folder)  # get image
+        # pixels = img.load() # create the pixel map
+        #
+        # for i in range(img.size[0]):  # for every pixel:
+        #     for j in range(img.size[1]):
+        #         if pixels[i, j] > 100:
+        #             pixels[i, j] = 170
+        #
+        # img.save(self.result_folder)
 
-    def _shift_hue(self, image, shift, ):
-        hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-        h, s, v = cv2.split(hsv)
-
-        shift_h = (h + shift) % 180
-        shift_hsv = cv2.merge([shift_h, s, v])
-        shift_img = cv2.cvtColor(shift_hsv, cv2.COLOR_HSV2BGR)
-
-        return shift_img
-
+    def get_destination(self):
+        target_image = PIL.Image.open(r".\data\destination.jpg")
+        target_image = PIL.ImageOps.grayscale(target_image)
+        target_image = PIL.ImageOps.invert(target_image)
+        target_image.save(r'.\result\destination.jpg')

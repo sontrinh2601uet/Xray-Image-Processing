@@ -20,3 +20,5 @@ if __name__ == '__main__':
     raw_image_parser.parse_raw_to_image()
     raw_image_parser.start_image_processing()
 
+    raw_image_parser.get_destination()
+
